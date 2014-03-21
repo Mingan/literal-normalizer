@@ -2,6 +2,9 @@ package cz.opendata.linked.literal.normalizer;
 
 import cz.cuni.mff.xrg.odcs.commons.module.config.DPUConfigObjectBase;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * Put your DPU's configuration here.
  * 
@@ -12,27 +15,29 @@ import cz.cuni.mff.xrg.odcs.commons.module.config.DPUConfigObjectBase;
  */
 public class TransformerConfig extends DPUConfigObjectBase {
 
-    private int width;
-    
-    private int height;	
+    private List<String> toMatch;
+    private String replacement;
 	
 	// TransformerConfig must provide public non-parametric constructor
     public TransformerConfig() {
-        width = 100;
-        height = 100;
-    }
-    
-    public TransformerConfig(int w, int h) {
-        width = w;
-        height = h;
-    }
-        
-    public int getWidth() {
-        return width;    
-    }
-    
-     public int getHeight() {
-        return height;    
+        toMatch = new LinkedList<>();
+        replacement = "";
     }
 
+
+    public List<String> getToMatch() {
+        return toMatch;
+    }
+
+    public void setToMatch(List<String> toMatch) {
+        this.toMatch = toMatch;
+    }
+
+    public String getReplacement() {
+        return replacement;
+    }
+
+    public void setReplacement(String replacement) {
+        this.replacement = replacement;
+    }
 }

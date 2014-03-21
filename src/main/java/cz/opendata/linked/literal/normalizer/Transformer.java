@@ -3,22 +3,26 @@ package cz.opendata.linked.literal.normalizer;
 import cz.cuni.mff.xrg.odcs.commons.data.DataUnitException;
 import cz.cuni.mff.xrg.odcs.commons.dpu.DPUContext;
 import cz.cuni.mff.xrg.odcs.commons.dpu.DPUException;
-import cz.cuni.mff.xrg.odcs.commons.dpu.annotation.*;
+import cz.cuni.mff.xrg.odcs.commons.dpu.annotation.AsTransformer;
+import cz.cuni.mff.xrg.odcs.commons.dpu.annotation.InputDataUnit;
+import cz.cuni.mff.xrg.odcs.commons.dpu.annotation.OutputDataUnit;
 import cz.cuni.mff.xrg.odcs.commons.module.dpu.ConfigurableBase;
 import cz.cuni.mff.xrg.odcs.commons.web.AbstractConfigDialog;
 import cz.cuni.mff.xrg.odcs.commons.web.ConfigDialogProvider;
 import cz.cuni.mff.xrg.odcs.rdf.interfaces.RDFDataUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-// TODO 1: You can choose AsLoader or AsExtractor instead of AsTransformer
+import java.util.Iterator;
+
 @AsTransformer
 public class Transformer extends ConfigurableBase<TransformerConfig>
-		implements 
-		// If you do not want the dialog, delete the following line
-		// 	and getConfigurationDialog function
-		ConfigDialogProvider<TransformerConfig> 
-	{
-	
-	@InputDataUnit
+		implements ConfigDialogProvider<TransformerConfig> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Transformer.class);
+
+
+    @InputDataUnit
 	public RDFDataUnit rdfInput;
 	
 	@OutputDataUnit
@@ -38,10 +42,38 @@ public class Transformer extends ConfigurableBase<TransformerConfig>
 	public void execute(DPUContext context)
 			throws DPUException,
 				DataUnitException {
-		
-		// DPU's configuration is accessible under 'this.config' 
+
+        rdfInput.copyAllDataToTargetDataUnit(rdfOutput);
+
+        String query =
+                "DELETE { ?s ?p ?o . }\n" +
+                "INSERT { ?s ?p '" + config.getReplacement() + "' . }\n" +
+                "WHERE {\n";
+
+        Iterator<String> it = config.getToMatch().iterator();
+        while(it.hasNext()) {
+            String val = it.next();
+
+            query +=
+                    "{\n" +
+                    "?s ?p ?o . \n" +
+                    "FILTER(isLiteral(?o))\n" +
+                    "FILTER(?o = '" + val + "')\n" +
+                    "}\n";
+
+            if (it.hasNext()) {
+                query += "UNION\n";
+            }
+        }
+        query += "}";
+        System.out.println(query);
+        rdfOutput.executeSPARQLUpdateQuery(query);
+		// DPU's configuration is accessible under 'this.config'
                 // DPU's context is accessible under 'context'
                 // DPU's data units are accessible under 'rdfInput' and 'rdfOutput'
+
+        //get triples matching list
+
 	}
 	
 }

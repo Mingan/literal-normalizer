@@ -1,0 +1,10 @@
+@prefix test: <http://normalizer.literal.linked.opendata.cz/test/> .
+
+test:czk1 test:currency "czk" .
+test:czk2 test:currency "CZK" .
+test:czk3 test:currency "Kč" .
+test:czk4 test:currency "kč" .
+
+test:non_exact test:currency "1000 Kč" .
+
+test:false test:currency "eur" .
