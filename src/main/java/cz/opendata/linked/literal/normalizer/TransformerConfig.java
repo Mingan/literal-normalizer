@@ -1,4 +1,4 @@
-package cz.opendata.linked.literal-normalizer;
+package cz.opendata.linked.literal.normalizer;
 
 import cz.cuni.mff.xrg.odcs.commons.module.config.DPUConfigObjectBase;
 

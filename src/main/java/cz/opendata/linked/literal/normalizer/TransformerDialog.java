@@ -1,4 +1,4 @@
-package cz.opendata.linked.literal-normalizer;
+package cz.opendata.linked.literal.normalizer;
 
 import cz.cuni.mff.xrg.odcs.commons.configuration.ConfigException;
 import cz.cuni.mff.xrg.odcs.commons.module.dialog.BaseConfigDialog;
@@ -7,7 +7,7 @@ import cz.cuni.mff.xrg.odcs.commons.module.dialog.BaseConfigDialog;
  * DPU's configuration dialog. User can use this dialog to configure DPU
  * configuration.
  */
-public class TransformerDialog extends BaseConfigDialog<DPUTemplateConfig> {
+public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
 
 	public TransformerDialog() {
 		super(TransformerConfig.class);

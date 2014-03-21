@@ -9,7 +9,7 @@
 		<relativePath>../module-base/pom.xml</relativePath>
 	</parent>    
     
-	<artifactId>literal-normalizer</artifactId>
+	<artifactId>literal_normalizer</artifactId>
     
 	<version>0.0.1</version>
     
