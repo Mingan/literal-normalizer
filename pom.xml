@@ -9,24 +9,22 @@
 		<relativePath>../module-base/pom.xml</relativePath>
 	</parent>    
     
-	<!-- TODO 1: fill the DPU name, without special characters, use '_' instead of whitespaces -->
-	<artifactId>dpu-name</artifactId>
+	<artifactId>literal-normalizer</artifactId>
     
-	<!-- TODO 2: specify module version, can be left unchanged -->
 	<version>0.0.1</version>
     
 	<packaging>bundle</packaging>
     
-	<!-- TODO 3: fill module description, the description will be visible to the user -->
-	<description>My first DPU implementation.</description>
+	<description>This DPU allows normalization of string literals.
+
+		By specifying WHERE part of SPARQL query literals are selected for normalization. List of regular expression snippets is entered alongside the target value. All literals matching the regular expressions are modified and matching parts replaced by target string.</description>
     
 	<properties>
-		<!-- TODO 4: fill the name of root package -->
-		<dpu.package>com.example</dpu.package>
-		<!-- TODO 5: fill DPU main class name here -->
-		<dpu.mainClass>DPUTemplate</dpu.mainClass>
+		<dpu.package>cz.opendata.linked.literal-normalizer</dpu.package>
+		<dpu.mainClass>Transformer</dpu.mainClass>
+
 		<!-- TODO 6: Put path to the ODCL DPUs directory here -->
-		<!-- this is required in order to use 'copy-to-odcl' and 'publish-to-odcl' profiles -->    
+		<!-- this is required in order to use 'copy-to-odcl' and 'publish-to-odcl' profiles -->
 		<dpu.odcl.dir></dpu.odcl.dir>
 	</properties>
  	

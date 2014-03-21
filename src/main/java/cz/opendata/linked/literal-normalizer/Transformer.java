@@ -1,4 +1,4 @@
-package com.example;
+package cz.opendata.linked.literal-normalizer;
 
 import cz.cuni.mff.xrg.odcs.commons.data.DataUnitException;
 import cz.cuni.mff.xrg.odcs.commons.dpu.DPUContext;
@@ -11,7 +11,7 @@ import cz.cuni.mff.xrg.odcs.rdf.interfaces.RDFDataUnit;
 
 // TODO 1: You can choose AsLoader or AsExtractor instead of AsTransformer
 @AsTransformer
-public class DPUTemplate extends ConfigurableBase<DPUTemplateConfig>
+public class Transformer extends ConfigurableBase<DPUTemplateConfig>
 		implements 
 		// If you do not want the dialog, delete the following line
 		// 	and getConfigurationDialog function
@@ -29,8 +29,8 @@ public class DPUTemplate extends ConfigurableBase<DPUTemplateConfig>
 	}
 
 	@Override
-	public AbstractConfigDialog<DPUTemplateConfig> getConfigurationDialog() {
-		return new DPUTemplateDialog();
+	public AbstractConfigDialog<TransformerConfig> getConfigurationDialog() {
+		return new TransformerDialog();
 	}
 
         // TODO 2: Implement the method execute being called when the DPU is launched

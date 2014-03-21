@@ -1,4 +1,4 @@
-package com.example;
+package cz.opendata.linked.literal-normalizer;
 
 import cz.cuni.mff.xrg.odcs.commons.module.config.DPUConfigObjectBase;
 
@@ -10,19 +10,19 @@ import cz.cuni.mff.xrg.odcs.commons.module.config.DPUConfigObjectBase;
  * 
  * <b>This class must have default (parameter less) constructor!</b>
  */
-public class DPUTemplateConfig extends DPUConfigObjectBase {
+public class TransformerConfig extends DPUConfigObjectBase {
 
     private int width;
     
     private int height;	
 	
-	// DPUTemplateConfig must provide public non-parametric constructor
-    public DPUTemplateConfig() {
+	// TransformerConfig must provide public non-parametric constructor
+    public TransformerConfig() {
         width = 100;
         height = 100;
     }
     
-    public DPUTemplateConfig(int w, int h) {
+    public TransformerConfig(int w, int h) {
         width = w;
         height = h;
     }
