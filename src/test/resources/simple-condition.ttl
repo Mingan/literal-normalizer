@@ -1,0 +1,5 @@
+@prefix test: <http://normalizer.literal.linked.opendata.cz/test/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+test:company dcterms:title "to replace" .
+             test:company dcterms:abstract "to replace" .

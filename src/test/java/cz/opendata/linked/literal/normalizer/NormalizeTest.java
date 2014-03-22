@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Random;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class NormalizeTest {
 
@@ -103,6 +104,37 @@ public class NormalizeTest {
         runTest(replacement, list, "regexp-case", "regexp-case-insensitive", 2);
     }
 
+    @Test
+    public void simpleConditionTest() throws Exception {
+        // setup transformation
+        String replacement = "replaced";
+        List<String> list = new LinkedList<>();
+        list.add("to replace");
+
+        String triple = "?s <http://purl.org/dc/terms/title> ?o";
+        config.setTripleToDelete(triple);
+        config.setCondition(triple);
+        config.setRegexp(false);
+
+        runTest(replacement, list, "simple-condition", "simple-condition", 1);
+    }
+
+    @Test
+    public void complexConditionTest() throws Exception {
+        // setup transformation
+        String replacement = "replaced";
+        List<String> list = new LinkedList<>();
+        list.add("to replace");
+
+        String triple = "?s <http://purl.org/dc/terms/title> ?o";
+        config.setTripleToDelete(triple);
+        config.setCondition(triple + " ;" +
+                "a <http://normalizer.literal.linked.opendata.cz/test/Business> .");
+        config.setRegexp(false);
+
+        runTest(replacement, list, "complex-condition", "complex-condition", 1);
+    }
+
     private void expectPartialMatches(String replacement, int expectedMatches) {
         int matches = 0;
         List<Statement> triples = normalized.getTriples();
@@ -142,6 +174,7 @@ public class NormalizeTest {
             normalized = env.createRdfOutput("output", false);
         } catch (Exception e) {
             e.printStackTrace();
+            fail();
         }
 
         assertTrue(input.getTripleCount() > 0);
@@ -151,6 +184,8 @@ public class NormalizeTest {
         try {
             env.run(transformer);
 
+            printResultToFile(outputFile);
+
             if (expectedExactCount > 0) {
                 expectExactMatches(replacement, expectedExactCount);
             }
@@ -158,11 +193,11 @@ public class NormalizeTest {
                 expectPartialMatches(replacement, expectedPartialCount);
             }
 
-            printResultToFile(outputFile);
 
             assertTrue(input.getTripleCount() == normalized.getTripleCount());
         } catch (Exception e) {
             e.printStackTrace();
+            fail();
         } finally {
             env.release();
         }

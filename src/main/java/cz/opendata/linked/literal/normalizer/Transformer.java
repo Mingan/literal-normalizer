@@ -60,12 +60,13 @@ public class Transformer extends ConfigurableBase<TransformerConfig>
 
     private String buildQuery() {
         String query =
-                "DELETE { ?s ?p ?o . }\n" +
-                "INSERT { ?s ?p ?replacement . }\n" +
+                "DELETE { " + config.getTripleToDelete() + " }\n" +
+                "INSERT { " + config.getTripleToInsert() + " }\n" +
                 "WHERE {\n" +
                     buildAlternativeConditions() +
                 "}";
 
+        System.out.println(query);
         return query;
     }
 
@@ -77,7 +78,7 @@ public class Transformer extends ConfigurableBase<TransformerConfig>
 
             String query =
                     "{\n" +
-                        "?s ?p ?o . \n" +
+                        config.getCondition() + "\n" +
                         "FILTER(isLiteral(?o))\n" +
                         buildConditionWithReplacement(val) +
                     "}\n";

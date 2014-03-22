@@ -19,11 +19,16 @@ public class TransformerConfig extends DPUConfigObjectBase {
     private String replacement;
     private boolean regexp;
     private boolean caseSensitive;
+    private String condition;
+    private String tripleToDelete;
 
     // TransformerConfig must provide public non-parametric constructor
     public TransformerConfig() {
-        toMatch = new LinkedList<>();
-        replacement = "";
+        setToMatch(new LinkedList<String>());
+        setReplacement("");
+        String triple = "?s ?p ?o .";
+        setCondition(triple);
+        setTripleToDelete(triple);
         setRegexp(false);
     }
 
@@ -63,5 +68,26 @@ public class TransformerConfig extends DPUConfigObjectBase {
         if (isRegexp()) {
             this.caseSensitive = caseSensitive;
         }
+    }
+
+    public void setCondition(String condition) {
+        this.condition = condition;
+    }
+
+    public String getCondition() {
+        return condition;
+    }
+
+
+    public String getTripleToDelete() {
+        return tripleToDelete;
+    }
+
+    public void setTripleToDelete(String tripleToDelete) {
+        this.tripleToDelete = tripleToDelete;
+    }
+
+    public String getTripleToInsert() {
+        return getTripleToDelete().replace("?o", "?replacement");
     }
 }
