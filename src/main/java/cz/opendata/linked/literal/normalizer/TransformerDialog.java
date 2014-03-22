@@ -1,6 +1,7 @@
 package cz.opendata.linked.literal.normalizer;
 
 import com.vaadin.data.Property;
+import com.vaadin.data.Validator;
 import com.vaadin.ui.*;
 import cz.cuni.mff.xrg.odcs.commons.configuration.ConfigException;
 import cz.cuni.mff.xrg.odcs.commons.module.dialog.BaseConfigDialog;
@@ -8,6 +9,8 @@ import cz.cuni.mff.xrg.odcs.commons.module.dialog.BaseConfigDialog;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * DPU's configuration dialog. User can use this dialog to configure DPU
@@ -121,9 +124,11 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
         textAreaCondition.setHeight("100px");
         textAreaCondition.setInputPrompt("?s ?p ?o .");
         textAreaCondition.setDescription("SPARQL condition snippet, ?o must be the literal being matched, no prefixes");
+        textAreaCondition.addValidator(getRequiredValidator("SPARQL condition snippet is required. If the normalization should be applied to all literals enter \"?s ?p ?o\" ."));
+        textAreaCondition.addValidator(getRequiredLiteralValidator("Literal which is being replaced must be bound to variable ?o."));
         mainLayout.addComponent(textAreaCondition, 0, 1, 3, 1);
     }
-    
+
     private void buildRemoveField() {
         labelRemove = new Label();
         labelRemove.setImmediate(false);
@@ -138,6 +143,8 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
         textFieldRemove.setWidth("100%");
         textFieldRemove.setInputPrompt("?s ?p ?o .");
         textFieldRemove.setDescription("Triple which will be modified, usually identical to a part of SPARQL condition");
+        textFieldRemove.addValidator(getRequiredValidator("Triple is required."));
+        textFieldRemove.addValidator(getRequiredLiteralValidator("Literal which is being replaced must be bound to variable ?o."));
         mainLayout.addComponent(textFieldRemove, 0, 3, 3, 3);
     }
 
@@ -156,6 +163,7 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
         textAreaToMatch.setHeight("200px");
         textAreaToMatch.setInputPrompt("czk\nKč");
         textAreaToMatch.setDescription("List of strings to be replaced, each value on a new line. The value is treated as a partial regular expression when the option is on");
+        textAreaToMatch.addValidator(getEmptyListValidator("Enter at least one string to replace."));
         mainLayout.addComponent(textAreaToMatch, 0, 5, 0, 8);
     }
     
@@ -172,6 +180,7 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
         textFieldReplacement.setImmediate(true);
         textFieldReplacement.setWidth("100%");
         textFieldReplacement.setInputPrompt("CZK");
+        textFieldReplacement.addValidator(getRequiredValidator("Normalized string is required."));
         mainLayout.addComponent(textFieldReplacement, 2, 5, 3, 5);
     }
     
@@ -193,6 +202,47 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
         checkboxCase.setDescription("Applicable only in regular expression mode");
         checkboxCase.setHeight("20px");
         mainLayout.addComponent(checkboxCase, 2, 7, 3, 7);
+    }
+
+    private Validator getRequiredValidator(final String message) {
+        return new Validator() {
+            @Override
+            public void validate(Object value) throws InvalidValueException {
+                if (value == null || value.equals("")) {
+                    if (!getContext().isTemplate()) {
+                        throw new InvalidValueException(message);
+                    }
+                }
+            }
+        };
+    }
+
+    private Validator getEmptyListValidator(final String message) {
+        return new Validator() {
+            @Override
+            public void validate(Object value) throws InvalidValueException {
+                if (value == null || value.equals("") || parseToMatch().size() == 0) {
+                    if (!getContext().isTemplate()) {
+                        throw new InvalidValueException(message);
+                    }
+                }
+            }
+        };
+    }
+
+    private Validator getRequiredLiteralValidator(final String message) {
+        return new Validator() {
+            @Override
+            public void validate(Object value) throws InvalidValueException {
+                Pattern regexp = Pattern.compile(".*\\s\\?o\\b.*", Pattern.DOTALL);
+                Matcher matcher = regexp.matcher((String) value);
+                if (!matcher.matches()) {
+                    if (!getContext().isTemplate()) {
+                        throw new InvalidValueException(message + " " + value);
+                    }
+                }
+            }
+        };
     }
 
 }
