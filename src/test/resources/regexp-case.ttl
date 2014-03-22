@@ -1,0 +1,4 @@
+@prefix test: <http://normalizer.literal.linked.opendata.cz/test/> .
+
+test:company1 test:name "lowercase" .
+test:company2 test:name "LOWERCASE" .

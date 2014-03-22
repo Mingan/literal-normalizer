@@ -18,11 +18,13 @@ public class TransformerConfig extends DPUConfigObjectBase {
     private List<String> toMatch;
     private String replacement;
     private boolean regexp;
+    private boolean caseSensitive;
 
     // TransformerConfig must provide public non-parametric constructor
     public TransformerConfig() {
         toMatch = new LinkedList<>();
         replacement = "";
+        setRegexp(false);
     }
 
 
@@ -44,9 +46,22 @@ public class TransformerConfig extends DPUConfigObjectBase {
 
     public void setRegexp(boolean regexp) {
         this.regexp = regexp;
+        if (regexp == false) {
+            setCaseSensitive(false);
+        }
     }
 
     public boolean isRegexp() {
         return regexp;
+    }
+
+    public boolean isCaseSensitive() {
+        return caseSensitive;
+    }
+
+    public void setCaseSensitive(boolean caseSensitive) {
+        if (isRegexp()) {
+            this.caseSensitive = caseSensitive;
+        }
     }
 }

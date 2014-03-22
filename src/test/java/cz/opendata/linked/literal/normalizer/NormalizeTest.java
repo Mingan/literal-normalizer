@@ -113,6 +113,120 @@ public class NormalizeTest {
         }
     }
 
+    @Test
+    public void simpleCaseSensitiveTest() throws Exception {
+        // setup transformation
+        String replacement = "replaced";
+        config.setReplacement(replacement);
+
+        List<String> list = new LinkedList<>();
+        list.add("lowercase");
+        config.setToMatch(list);
+
+        config.setRegexp(false);
+        config.setCaseSensitive(false);
+
+        transformer.configureDirectly(config);
+
+        // setup data units
+        loadDataFromFile("regexp-case");
+        normalized = env.createRdfOutput("output", false);
+
+        assertTrue(input.getTripleCount() > 0);
+
+
+        // run and assert
+        try {
+            env.run(transformer);
+
+            printResultToFile("simple-case-sensitive");
+
+            expectExactMatches(replacement, 1);
+
+            assertTrue(input.getTripleCount() == normalized.getTripleCount());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            env.release();
+        }
+    }
+
+    @Test
+    public void regexCaseSensitiveTest() throws Exception {
+        // setup transformation
+        String replacement = "replaced";
+        config.setReplacement(replacement);
+
+        List<String> list = new LinkedList<>();
+        list.add("lowercase");
+        config.setToMatch(list);
+
+        config.setRegexp(true);
+        config.setCaseSensitive(false);
+
+        transformer.configureDirectly(config);
+
+        // setup data units
+        loadDataFromFile("regexp-case");
+        normalized = env.createRdfOutput("output", false);
+
+        assertTrue(input.getTripleCount() > 0);
+
+
+        // run and assert
+        try {
+            env.run(transformer);
+
+            printResultToFile("regexp-case-sensitive");
+
+            expectExactMatches(replacement, 1);
+
+            assertTrue(input.getTripleCount() == normalized.getTripleCount());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            env.release();
+        }
+    }
+
+    @Test
+    public void regexCaseInsensitiveTest() throws Exception {
+        // setup transformation
+        String replacement = "replaced";
+        config.setReplacement(replacement);
+
+        List<String> list = new LinkedList<>();
+        list.add("lowercase");
+        config.setToMatch(list);
+
+        config.setRegexp(true);
+        config.setCaseSensitive(true);
+
+        transformer.configureDirectly(config);
+
+        // setup data units
+        loadDataFromFile("regexp-case");
+        normalized = env.createRdfOutput("output", false);
+
+        assertTrue(input.getTripleCount() > 0);
+
+
+        // run and assert
+        try {
+            env.run(transformer);
+
+            printResultToFile("regexp-case-insensitive");
+
+            expectExactMatches(replacement, 2);
+
+            assertTrue(input.getTripleCount() == normalized.getTripleCount());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            env.release();
+        }
+    }
+
     private void expectPartialMatches(String replacement, int expectedMatches) {
         int matches = 0;
         List<Statement> triples = normalized.getTriples();

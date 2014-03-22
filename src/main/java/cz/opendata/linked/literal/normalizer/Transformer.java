@@ -89,13 +89,20 @@ public class Transformer extends ConfigurableBase<TransformerConfig>
     private String buildConditionWithReplacement(String val) {
         String query;
         if (config.isRegexp()) {
-            query = "FILTER(REGEX(?o, '" + val + "'))\n" +
-                    "BIND(REPLACE(?o, '^(.*)" + val + "(.*)$', '$1" + config.getReplacement() + "$2') AS ?replacement)\n";
+            query = "FILTER(REGEX(?o, '" + val + "', '" + getRegexpFlags() + "'))\n" +
+                    "BIND(REPLACE(?o, '^(.*)" + val + "(.*)$', '$1" + config.getReplacement() + "$2', '" + getRegexpFlags() + "') AS ?replacement)\n";
         } else {
             query = "FILTER(?o = '" + val + "')\n" +
                     "BIND('" + config.getReplacement() + "' AS ?replacement)\n";
         }
         return query;
+    }
+
+    private String getRegexpFlags() {
+        if (config.isCaseSensitive()) {
+            return "i";
+        }
+        return "";
     }
 
 }
