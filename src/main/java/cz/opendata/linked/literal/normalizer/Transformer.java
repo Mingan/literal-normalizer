@@ -100,7 +100,7 @@ public class Transformer extends ConfigurableBase<TransformerConfig>
     }
 
     private String getRegexpFlags() {
-        if (config.isCaseSensitive()) {
+        if (config.isCaseInsensitive()) {
             return "i";
         }
         return "";

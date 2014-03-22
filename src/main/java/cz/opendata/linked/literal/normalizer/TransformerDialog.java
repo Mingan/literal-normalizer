@@ -1,5 +1,6 @@
 package cz.opendata.linked.literal.normalizer;
 
+import com.vaadin.data.Property;
 import com.vaadin.ui.*;
 import cz.cuni.mff.xrg.odcs.commons.configuration.ConfigException;
 import cz.cuni.mff.xrg.odcs.commons.module.dialog.BaseConfigDialog;
@@ -11,16 +12,22 @@ import cz.cuni.mff.xrg.odcs.commons.module.dialog.BaseConfigDialog;
 public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
 
     private GridLayout mainLayout;
+
     private Label labelCondition;
     private TextArea textAreaCondition;
+
     private Label labelRemove;
     private TextField textFieldRemove;
+
     private Label labelToMatch;
     private TextArea textAreaToMatch;
+
     private Label labelReplacement;
     private TextField textFieldReplacement;
+
     private CheckBox checkboxRegexp;
     private Label labelRegexp;
+
     private CheckBox checkboxCase;
     private Label labelCase;
 
@@ -29,6 +36,25 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
         buildMainLayout();
         setCompositionRoot(mainLayout);
 	}
+
+    @Override
+    public void setConfiguration(TransformerConfig config) throws ConfigException {
+        textAreaCondition.setValue(config.getCondition());
+        textFieldRemove.setValue(config.getTripleToDelete());
+        textAreaToMatch.setValue(config.getToMatchInString());
+        textFieldReplacement.setValue(config.getReplacement());
+        checkboxRegexp.setValue(config.isRegexp());
+        checkboxCase.setValue(config.isCaseInsensitive());
+
+        checkboxCase.setEnabled(config.isRegexp());
+    }
+
+    @Override
+    public TransformerConfig getConfiguration() throws ConfigException {
+        // TODO : gather information from dialog and store them into configuration, then return it
+        TransformerConfig config = new TransformerConfig();
+        return config;
+    }
 
     private void buildMainLayout() {
         // top-level component properties
@@ -128,45 +154,23 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
     }
     
     private void buildRegexpField() {
-        checkboxRegexp = new CheckBox();
+        checkboxRegexp = new CheckBox("Use regular expression mode");
         checkboxRegexp.setDescription("Strings to replace should be treated as a partial regular expression");
         checkboxRegexp.setHeight("20px");
-        mainLayout.addComponent(checkboxRegexp, 2, 6);
-        mainLayout.setComponentAlignment(checkboxRegexp, Alignment.TOP_RIGHT);
-
-        labelRegexp = new Label();
-        labelRegexp.setImmediate(false);
-        labelRegexp.setWidth("100%");
-        labelRegexp.setHeight("20px");
-        labelRegexp.setValue("Use regular expression mode");
-        mainLayout.addComponent(labelRegexp, 3, 6);
+        checkboxRegexp.addValueChangeListener(new Property.ValueChangeListener() {
+            @Override
+            public void valueChange(Property.ValueChangeEvent event) {
+                checkboxCase.setEnabled(checkboxRegexp.getValue());
+            }
+        });
+        mainLayout.addComponent(checkboxRegexp, 2, 6, 3, 6);
     }
     
     private void buildCaseInsensitiveField() {
-        checkboxCase = new CheckBox();
+        checkboxCase = new CheckBox("Use case insensitive regular expressions");
         checkboxCase.setDescription("Applicable only in regular expression mode");
         checkboxCase.setHeight("20px");
-        mainLayout.addComponent(checkboxCase, 2, 7);
-        mainLayout.setComponentAlignment(checkboxCase, Alignment.TOP_RIGHT);
-
-        labelCase = new Label();
-        labelCase.setImmediate(false);
-        labelCase.setWidth("100%");
-        labelCase.setHeight("20px");
-        labelCase.setValue("Use case insensitive regular expressions");
-        mainLayout.addComponent(labelCase, 3, 7);
+        mainLayout.addComponent(checkboxCase, 2, 7, 3, 7);
     }
-
-    @Override
-	public void setConfiguration(TransformerConfig conf) throws ConfigException {
-		// TODO : load configuration from function parameter into dialog
-	}
-
-	@Override
-	public TransformerConfig getConfiguration() throws ConfigException {
-		// TODO : gather information from dialog and store them into configuration, then return it
-        TransformerConfig config = new TransformerConfig();
-		return config;
-	}
 
 }

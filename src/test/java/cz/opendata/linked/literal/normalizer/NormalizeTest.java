@@ -34,6 +34,9 @@ public class NormalizeTest {
         env = TestEnvironment.create();
         input = null;
         normalized = null;
+
+        config.setCondition("?s ?p ?o .");
+        config.setTripleToDelete("?s ?p ?o .");
     }
 
     @Test
@@ -49,7 +52,6 @@ public class NormalizeTest {
         config.setRegexp(false);
         runTest(replacement, list, "whole-strings", "whole-strings", 4);
     }
-
 
     @Test
     public void regexpTest() throws Exception {
@@ -73,7 +75,6 @@ public class NormalizeTest {
         list.add("lowercase");
 
         config.setRegexp(false);
-        config.setCaseSensitive(false);
 
         runTest(replacement, list, "regexp-case", "simple-case-sensitive", 1);
     }
@@ -86,7 +87,7 @@ public class NormalizeTest {
         list.add("lowercase");
 
         config.setRegexp(true);
-        config.setCaseSensitive(false);
+        config.setCaseSensitive(true);
 
         runTest(replacement, list, "regexp-case", "regexp-case-sensitive", 1);
     }
@@ -99,7 +100,7 @@ public class NormalizeTest {
         list.add("lowercase");
 
         config.setRegexp(true);
-        config.setCaseSensitive(true);
+        config.setCaseSensitive(false);
 
         runTest(replacement, list, "regexp-case", "regexp-case-insensitive", 2);
     }
@@ -178,7 +179,6 @@ public class NormalizeTest {
         }
 
         assertTrue(input.getTripleCount() > 0);
-
 
         // run and assert
         try {

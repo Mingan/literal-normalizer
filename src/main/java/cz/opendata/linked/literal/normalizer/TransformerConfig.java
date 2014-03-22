@@ -1,6 +1,7 @@
 package cz.opendata.linked.literal.normalizer;
 
 import cz.cuni.mff.xrg.odcs.commons.module.config.DPUConfigObjectBase;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -26,10 +27,10 @@ public class TransformerConfig extends DPUConfigObjectBase {
     public TransformerConfig() {
         setToMatch(new LinkedList<String>());
         setReplacement("");
-        String triple = "?s ?p ?o .";
-        setCondition(triple);
-        setTripleToDelete(triple);
+        setCondition("");
+        setTripleToDelete("");
         setRegexp(false);
+        setCaseSensitive(true);
     }
 
 
@@ -51,9 +52,6 @@ public class TransformerConfig extends DPUConfigObjectBase {
 
     public void setRegexp(boolean regexp) {
         this.regexp = regexp;
-        if (regexp == false) {
-            setCaseSensitive(false);
-        }
     }
 
     public boolean isRegexp() {
@@ -65,9 +63,7 @@ public class TransformerConfig extends DPUConfigObjectBase {
     }
 
     public void setCaseSensitive(boolean caseSensitive) {
-        if (isRegexp()) {
-            this.caseSensitive = caseSensitive;
-        }
+        this.caseSensitive = caseSensitive;
     }
 
     public void setCondition(String condition) {
@@ -89,5 +85,13 @@ public class TransformerConfig extends DPUConfigObjectBase {
 
     public String getTripleToInsert() {
         return getTripleToDelete().replace("?o", "?replacement");
+    }
+
+    public Boolean isCaseInsensitive() {
+        return !isCaseSensitive();
+    }
+
+    public String getToMatchInString() {
+        return StringUtils.join(getToMatch(), "\n");
     }
 }
