@@ -10,10 +10,12 @@ import cz.cuni.mff.xrg.odcs.commons.module.dpu.ConfigurableBase;
 import cz.cuni.mff.xrg.odcs.commons.web.AbstractConfigDialog;
 import cz.cuni.mff.xrg.odcs.commons.web.ConfigDialogProvider;
 import cz.cuni.mff.xrg.odcs.rdf.interfaces.RDFDataUnit;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 
 @AsTransformer
 public class Transformer extends ConfigurableBase<TransformerConfig>
@@ -45,34 +47,8 @@ public class Transformer extends ConfigurableBase<TransformerConfig>
 
         rdfInput.copyAllDataToTargetDataUnit(rdfOutput);
 
-        String query =
-                "DELETE { ?s ?p ?o . }\n" +
-                "INSERT { ?s ?p ?replacement . }\n" +
-                "WHERE {\n";
+        String query = buildQuery();
 
-        Iterator<String> it = config.getToMatch().iterator();
-        while(it.hasNext()) {
-            String val = it.next();
-
-            query +=
-                    "{\n" +
-                    "?s ?p ?o . \n" +
-                    "FILTER(isLiteral(?o))\n";
-            if (config.isRegexp()) {
-                query += "FILTER(REGEX(?o, '" + val + "'))\n" +
-                        "BIND(REPLACE(?o, '^(.*)" + val + "(.*)$', '$1" + config.getReplacement() + "$2') AS ?replacement)\n";
-            } else {
-                query += "FILTER(?o = '" + val + "')\n" +
-                        "BIND('" + config.getReplacement() + "' AS ?replacement)\n";
-            }
-            query += "}\n";
-
-            if (it.hasNext()) {
-                query += "UNION\n";
-            }
-        }
-        query += "}";
-        System.out.println(query);
         rdfOutput.executeSPARQLUpdateQuery(query);
 		// DPU's configuration is accessible under 'this.config'
                 // DPU's context is accessible under 'context'
@@ -81,5 +57,45 @@ public class Transformer extends ConfigurableBase<TransformerConfig>
         //get triples matching list
 
 	}
-	
+
+    private String buildQuery() {
+        String query =
+                "DELETE { ?s ?p ?o . }\n" +
+                "INSERT { ?s ?p ?replacement . }\n" +
+                "WHERE {\n" +
+                    buildAlternativeConditions() +
+                "}";
+
+        return query;
+    }
+
+    private String buildAlternativeConditions() {
+        LinkedList<String> alternatives = new LinkedList<>();
+        Iterator<String> it = config.getToMatch().iterator();
+        while(it.hasNext()) {
+            String val = it.next();
+
+            String query =
+                    "{\n" +
+                        "?s ?p ?o . \n" +
+                        "FILTER(isLiteral(?o))\n" +
+                        buildConditionWithReplacement(val) +
+                    "}\n";
+            alternatives.add(query);
+        }
+        return StringUtils.join(alternatives, "UNION\n");
+    }
+
+    private String buildConditionWithReplacement(String val) {
+        String query;
+        if (config.isRegexp()) {
+            query = "FILTER(REGEX(?o, '" + val + "'))\n" +
+                    "BIND(REPLACE(?o, '^(.*)" + val + "(.*)$', '$1" + config.getReplacement() + "$2') AS ?replacement)\n";
+        } else {
+            query = "FILTER(?o = '" + val + "')\n" +
+                    "BIND('" + config.getReplacement() + "' AS ?replacement)\n";
+        }
+        return query;
+    }
+
 }
