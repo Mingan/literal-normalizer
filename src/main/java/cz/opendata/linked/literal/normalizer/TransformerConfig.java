@@ -1,6 +1,7 @@
 package cz.opendata.linked.literal.normalizer;
 
 import cz.cuni.mff.xrg.odcs.commons.module.config.DPUConfigObjectBase;
+import cz.cuni.mff.xrg.odcs.rdf.validators.SPARQLUpdateValidator;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.LinkedList;
@@ -23,7 +24,6 @@ public class TransformerConfig extends DPUConfigObjectBase {
     private String condition;
     private String tripleToDelete;
 
-    // TransformerConfig must provide public non-parametric constructor
     public TransformerConfig() {
         setToMatch(new LinkedList<String>());
         setReplacement("");
@@ -33,6 +33,16 @@ public class TransformerConfig extends DPUConfigObjectBase {
         setCaseSensitive(true);
     }
 
+    @Override
+    public boolean isValid() {
+        String query = SparqlQueryBuilder.buildQueryFromConfig(this);
+        SPARQLUpdateValidator updateValidator = new SPARQLUpdateValidator(query);
+        return getCondition() != ""
+                && getTripleToDelete() != ""
+                && getToMatch().size() != 0
+                && getReplacement() != ""
+                && updateValidator.isQueryValid();
+    }
 
     public List<String> getToMatch() {
         return toMatch;
@@ -73,7 +83,6 @@ public class TransformerConfig extends DPUConfigObjectBase {
     public String getCondition() {
         return condition;
     }
-
 
     public String getTripleToDelete() {
         return tripleToDelete;

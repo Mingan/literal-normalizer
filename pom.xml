@@ -34,6 +34,13 @@
 			<artifactId>commons-lang3</artifactId>
 			<version>3.0</version>
 		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>dataunit-rdf-impl</artifactId>
+			<version>${odcs.version}</version>
+			<type>jar</type>
+			<scope>provided</scope>
+		</dependency>
 
 		<!--<dependency>-->
 			<!--<groupId>${project.groupId}</groupId>-->
