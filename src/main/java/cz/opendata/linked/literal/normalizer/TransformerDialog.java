@@ -5,6 +5,10 @@ import com.vaadin.ui.*;
 import cz.cuni.mff.xrg.odcs.commons.configuration.ConfigException;
 import cz.cuni.mff.xrg.odcs.commons.module.dialog.BaseConfigDialog;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * DPU's configuration dialog. User can use this dialog to configure DPU
  * configuration.
@@ -26,10 +30,8 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
     private TextField textFieldReplacement;
 
     private CheckBox checkboxRegexp;
-    private Label labelRegexp;
 
     private CheckBox checkboxCase;
-    private Label labelCase;
 
     public TransformerDialog() {
 		super(TransformerConfig.class);
@@ -51,9 +53,30 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
 
     @Override
     public TransformerConfig getConfiguration() throws ConfigException {
-        // TODO : gather information from dialog and store them into configuration, then return it
         TransformerConfig config = new TransformerConfig();
+
+        config.setCondition(textAreaCondition.getValue().trim());
+        config.setTripleToDelete(textFieldRemove.getValue().trim());
+        config.setToMatch(parseToMatch());
+        config.setReplacement(textFieldReplacement.getValue());
+        config.setRegexp(checkboxRegexp.getValue());
+        config.setCaseSensitive(checkboxCase.getValue());
+
         return config;
+    }
+
+    private List<String> parseToMatch() {
+        List<String> list = Arrays.asList(textAreaToMatch.getValue());
+        List<String> filtered = new LinkedList<>();
+
+        for (String line : list) {
+            String cleaned = line.trim();
+            if (cleaned.length() > 0) {
+                filtered.add(cleaned);
+            }
+        }
+
+        return filtered;
     }
 
     private void buildMainLayout() {
@@ -149,7 +172,6 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
         textFieldReplacement.setImmediate(true);
         textFieldReplacement.setWidth("100%");
         textFieldReplacement.setInputPrompt("CZK");
-        textFieldReplacement.setDescription("Normalized value");
         mainLayout.addComponent(textFieldReplacement, 2, 5, 3, 5);
     }
     
