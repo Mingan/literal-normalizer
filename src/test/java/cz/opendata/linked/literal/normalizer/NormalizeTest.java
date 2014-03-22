@@ -39,192 +39,68 @@ public class NormalizeTest {
     public void wholeStringsTest() throws Exception {
         // setup transformation
         String replacement = "CZK";
-        config.setReplacement(replacement);
-
         List<String> list = new LinkedList<>();
         list.add("czk");
         list.add("CZK");
         list.add("kč");
         list.add("Kč");
-        config.setToMatch(list);
 
-        transformer.configureDirectly(config);
-
-        // setup data units
-        loadDataFromFile("whole-strings");
-        normalized = env.createRdfOutput("output", false);
-
-        assertTrue(input.getTripleCount() > 0);
-
-
-        // run and assert
-        try {
-            env.run(transformer);
-
-            expectExactMatches(replacement, 4);
-
-            printResultToFile("whole-strings");
-
-            assertTrue(input.getTripleCount() == normalized.getTripleCount());
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            env.release();
-        }
+        config.setRegexp(false);
+        runTest(replacement, list, "whole-strings", "whole-strings", 4);
     }
+
 
     @Test
     public void regexpTest() throws Exception {
         // setup transformation
         String replacement = "s. r. o.";
-        config.setReplacement(replacement);
-
         List<String> list = new LinkedList<>();
         list.add("s\\\\.r\\\\.o\\\\.");
         list.add("spol\\\\. s r\\\\. o\\\\.");
         list.add("spol\\\\. s r\\\\.o\\\\.");
-        config.setToMatch(list);
 
         config.setRegexp(true);
-
-        transformer.configureDirectly(config);
-
-        // setup data units
-        loadDataFromFile("regexp");
-        normalized = env.createRdfOutput("output", false);
-
-        assertTrue(input.getTripleCount() > 0);
-
-
-        // run and assert
-        try {
-            env.run(transformer);
-
-            printResultToFile("regexp");
-
-            expectPartialMatches(replacement, 4);
-            expectExactMatches(replacement, 0);
-
-            assertTrue(input.getTripleCount() == normalized.getTripleCount());
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            env.release();
-        }
+        runTest(replacement, list, "regexp", "regexp", 0, 4);
     }
 
     @Test
     public void simpleCaseSensitiveTest() throws Exception {
         // setup transformation
         String replacement = "replaced";
-        config.setReplacement(replacement);
 
         List<String> list = new LinkedList<>();
         list.add("lowercase");
-        config.setToMatch(list);
 
         config.setRegexp(false);
         config.setCaseSensitive(false);
 
-        transformer.configureDirectly(config);
-
-        // setup data units
-        loadDataFromFile("regexp-case");
-        normalized = env.createRdfOutput("output", false);
-
-        assertTrue(input.getTripleCount() > 0);
-
-
-        // run and assert
-        try {
-            env.run(transformer);
-
-            printResultToFile("simple-case-sensitive");
-
-            expectExactMatches(replacement, 1);
-
-            assertTrue(input.getTripleCount() == normalized.getTripleCount());
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            env.release();
-        }
+        runTest(replacement, list, "regexp-case", "simple-case-sensitive", 1);
     }
 
     @Test
     public void regexCaseSensitiveTest() throws Exception {
         // setup transformation
         String replacement = "replaced";
-        config.setReplacement(replacement);
-
         List<String> list = new LinkedList<>();
         list.add("lowercase");
-        config.setToMatch(list);
 
         config.setRegexp(true);
         config.setCaseSensitive(false);
 
-        transformer.configureDirectly(config);
-
-        // setup data units
-        loadDataFromFile("regexp-case");
-        normalized = env.createRdfOutput("output", false);
-
-        assertTrue(input.getTripleCount() > 0);
-
-
-        // run and assert
-        try {
-            env.run(transformer);
-
-            printResultToFile("regexp-case-sensitive");
-
-            expectExactMatches(replacement, 1);
-
-            assertTrue(input.getTripleCount() == normalized.getTripleCount());
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            env.release();
-        }
+        runTest(replacement, list, "regexp-case", "regexp-case-sensitive", 1);
     }
 
     @Test
     public void regexCaseInsensitiveTest() throws Exception {
         // setup transformation
         String replacement = "replaced";
-        config.setReplacement(replacement);
-
         List<String> list = new LinkedList<>();
         list.add("lowercase");
-        config.setToMatch(list);
 
         config.setRegexp(true);
         config.setCaseSensitive(true);
 
-        transformer.configureDirectly(config);
-
-        // setup data units
-        loadDataFromFile("regexp-case");
-        normalized = env.createRdfOutput("output", false);
-
-        assertTrue(input.getTripleCount() > 0);
-
-
-        // run and assert
-        try {
-            env.run(transformer);
-
-            printResultToFile("regexp-case-insensitive");
-
-            expectExactMatches(replacement, 2);
-
-            assertTrue(input.getTripleCount() == normalized.getTripleCount());
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            env.release();
-        }
+        runTest(replacement, list, "regexp-case", "regexp-case-insensitive", 2);
     }
 
     private void expectPartialMatches(String replacement, int expectedMatches) {
@@ -249,6 +125,49 @@ public class NormalizeTest {
         assertTrue(matches == expectedMatches);
     }
 
+    private void runTest(String replacement, List<String> matches, String inputFile, String outputFile, int expectedExactCount) {
+        runTest(replacement, matches, inputFile, outputFile, expectedExactCount, 0);
+    }
+
+    private void runTest(String replacement, List<String> matches, String inputFile, String outputFile, int expectedExactCount, int expectedPartialCount) {
+        // setup transformation
+        config.setReplacement(replacement);
+        config.setToMatch(matches);
+
+
+        // setup data units
+        try {
+            transformer.configureDirectly(config);
+            input = env.createRdfInputFromResource("input", false, inputFile + ".ttl", RDFFormat.TURTLE);
+            normalized = env.createRdfOutput("output", false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        assertTrue(input.getTripleCount() > 0);
+
+
+        // run and assert
+        try {
+            env.run(transformer);
+
+            if (expectedExactCount > 0) {
+                expectExactMatches(replacement, expectedExactCount);
+            }
+            if (expectedPartialCount > 0) {
+                expectPartialMatches(replacement, expectedPartialCount);
+            }
+
+            printResultToFile(outputFile);
+
+            assertTrue(input.getTripleCount() == normalized.getTripleCount());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            env.release();
+        }
+    }
+
     private void printResultToFile(String file) {
         try {
             Random rg = new Random();
@@ -261,12 +180,6 @@ public class NormalizeTest {
     }
 
     private void loadDataFromFile(String file) {
-        try {
-            input = env.createRdfInputFromResource(
-                    "input", false,
-                    file + ".ttl", RDFFormat.TURTLE);
-        } catch (RDFException e) {
-            e.printStackTrace();
-        }
+
     }
 }
