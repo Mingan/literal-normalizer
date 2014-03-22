@@ -40,12 +40,16 @@ public class Transformer extends ConfigurableBase<TransformerConfig>
 			throws DPUException,
 				DataUnitException {
 
+        LOG.info("Starting copy of input to output");
         rdfInput.copyAllDataToTargetDataUnit(rdfOutput);
 
+        LOG.info("Building query");
         String query = SparqlQueryBuilder.buildQueryFromConfig(config);
 
+        LOG.info("Running query");
         rdfOutput.executeSPARQLUpdateQuery(query);
 
+        LOG.info("Query done");
 	}
 
 }
