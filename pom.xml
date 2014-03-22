@@ -20,12 +20,12 @@
 		By specifying WHERE part of SPARQL query literals are selected for normalization. List of regular expression snippets is entered alongside the target value. All literals matching the regular expressions are modified and matching parts replaced by target string.</description>
     
 	<properties>
-		<dpu.package>cz.opendata.linked.literal-normalizer</dpu.package>
+		<dpu.package>cz.opendata.linked.literal.normalizer</dpu.package>
 		<dpu.mainClass>Transformer</dpu.mainClass>
 
 		<!-- TODO 6: Put path to the ODCL DPUs directory here -->
 		<!-- this is required in order to use 'copy-to-odcl' and 'publish-to-odcl' profiles -->
-		<dpu.odcl.dir></dpu.odcl.dir>
+		<dpu.odcs.dir>../ODCS/target/dpu</dpu.odcs.dir>
 	</properties>
  	
 	<dependencies>
