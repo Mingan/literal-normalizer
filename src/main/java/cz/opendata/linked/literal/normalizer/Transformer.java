@@ -47,7 +47,7 @@ public class Transformer extends ConfigurableBase<TransformerConfig>
 
         String query =
                 "DELETE { ?s ?p ?o . }\n" +
-                "INSERT { ?s ?p '" + config.getReplacement() + "' . }\n" +
+                "INSERT { ?s ?p ?replacement . }\n" +
                 "WHERE {\n";
 
         Iterator<String> it = config.getToMatch().iterator();
@@ -57,9 +57,15 @@ public class Transformer extends ConfigurableBase<TransformerConfig>
             query +=
                     "{\n" +
                     "?s ?p ?o . \n" +
-                    "FILTER(isLiteral(?o))\n" +
-                    "FILTER(?o = '" + val + "')\n" +
-                    "}\n";
+                    "FILTER(isLiteral(?o))\n";
+            if (config.isRegexp()) {
+                query += "FILTER(REGEX(?o, '" + val + "'))\n" +
+                        "BIND(REPLACE(?o, '^(.*)" + val + "(.*)$', '$1" + config.getReplacement() + "$2') AS ?replacement)\n";
+            } else {
+                query += "FILTER(?o = '" + val + "')\n" +
+                        "BIND('" + config.getReplacement() + "' AS ?replacement)\n";
+            }
+            query += "}\n";
 
             if (it.hasNext()) {
                 query += "UNION\n";

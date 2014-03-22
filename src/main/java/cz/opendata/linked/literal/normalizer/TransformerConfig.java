@@ -17,8 +17,9 @@ public class TransformerConfig extends DPUConfigObjectBase {
 
     private List<String> toMatch;
     private String replacement;
-	
-	// TransformerConfig must provide public non-parametric constructor
+    private boolean regexp;
+
+    // TransformerConfig must provide public non-parametric constructor
     public TransformerConfig() {
         toMatch = new LinkedList<>();
         replacement = "";
@@ -39,5 +40,13 @@ public class TransformerConfig extends DPUConfigObjectBase {
 
     public void setReplacement(String replacement) {
         this.replacement = replacement;
+    }
+
+    public void setRegexp(boolean regexp) {
+        this.regexp = regexp;
+    }
+
+    public boolean isRegexp() {
+        return regexp;
     }
 }

@@ -57,6 +57,7 @@ public class NormalizeTest {
         assertTrue(input.getTripleCount() > 0);
 
 
+        // run and assert
         try {
             env.run(transformer);
 
@@ -70,6 +71,57 @@ public class NormalizeTest {
         } finally {
             env.release();
         }
+    }
+
+    @Test
+    public void regexpTest() throws Exception {
+        // setup transformation
+        String replacement = "s. r. o.";
+        config.setReplacement(replacement);
+
+        List<String> list = new LinkedList<>();
+        list.add("s\\\\.r\\\\.o\\\\.");
+        list.add("spol\\\\. s r\\\\. o\\\\.");
+        list.add("spol\\\\. s r\\\\.o\\\\.");
+        config.setToMatch(list);
+
+        config.setRegexp(true);
+
+        transformer.configureDirectly(config);
+
+        // setup data units
+        loadDataFromFile("regexp");
+        normalized = env.createRdfOutput("output", false);
+
+        assertTrue(input.getTripleCount() > 0);
+
+
+        // run and assert
+        try {
+            env.run(transformer);
+
+            printResultToFile("regexp");
+
+            expectPartialMatches(replacement, 4);
+            expectExactMatches(replacement, 0);
+
+            assertTrue(input.getTripleCount() == normalized.getTripleCount());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            env.release();
+        }
+    }
+
+    private void expectPartialMatches(String replacement, int expectedMatches) {
+        int matches = 0;
+        List<Statement> triples = normalized.getTriples();
+        for (int i = 0; i < triples.size(); i++) {
+            if (triples.get(i).getObject().stringValue().contains(replacement)) {
+                matches += 1;
+            }
+        }
+        assertTrue(matches == expectedMatches);
     }
 
     private void expectExactMatches(String replacement, int expectedMatches) {

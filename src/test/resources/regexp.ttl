@@ -1,0 +1,10 @@
+@prefix test: <http://normalizer.literal.linked.opendata.cz/test/> .
+
+test:company1 test:name "Neumím mezery, s.r.o." .
+test:company2 test:name "Jsem ok, s. r. o." .
+test:company3 test:name "Jsem ukacaný, spol. s r. o." .
+test:company4 test:name "Jsem ambivalentní, spol. s r.o." .
+
+test:false_positive test:name "Nejsem, s-r-o-" .
+
+test:false test:name "Jsem akciovka, a. s." .
