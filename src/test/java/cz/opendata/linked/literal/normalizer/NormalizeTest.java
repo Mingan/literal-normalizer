@@ -8,6 +8,7 @@ import cz.cuni.mff.xrg.odcs.rdf.interfaces.RDFDataUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.openrdf.model.Statement;
+import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.rio.RDFFormat;
 
 import java.util.LinkedList;
@@ -136,26 +137,68 @@ public class NormalizeTest {
         runTest(replacement, list, "complex-condition", "complex-condition", 1);
     }
 
-    private void expectPartialMatches(String replacement, int expectedMatches) {
-        int matches = 0;
-        List<Statement> triples = normalized.getTriples();
-        for (int i = 0; i < triples.size(); i++) {
-            if (triples.get(i).getObject().stringValue().contains(replacement)) {
-                matches += 1;
-            }
-        }
-        assertTrue(matches == expectedMatches);
+    @Test
+    public void languageNotSetSimpleTest() throws Exception {
+        // setup transformation
+        String replacement = "replaced";
+        List<String> list = new LinkedList<>();
+        list.add("to replace");
+
+        String triple = "?s ?p ?o";
+        config.setTripleToDelete(triple);
+        config.setCondition(triple);
+        config.setLanguage("");
+        config.setRegexp(false);
+
+        runTest(replacement, list, "languages", "languages-simple", 1);
     }
 
-    private void expectExactMatches(String replacement, int expectedMatches) {
-        int matches = 0;
-        List<Statement> triples = normalized.getTriples();
-        for (int i = 0; i < triples.size(); i++) {
-            if (triples.get(i).getObject().stringValue().equals(replacement)) {
-                matches += 1;
-            }
-        }
-        assertTrue(matches == expectedMatches);
+    @Test
+    public void languageSetSimpleTest() throws Exception {
+        // setup transformation
+        String replacement = "replaced";
+        List<String> list = new LinkedList<>();
+        list.add("to replace");
+
+        String triple = "?s ?p ?o";
+        config.setTripleToDelete(triple);
+        config.setCondition(triple);
+        config.setLanguage("en");
+        config.setRegexp(false);
+
+        runTest(replacement, list, "languages", "languages-set-simple", 1);
+    }
+
+    @Test
+    public void languageNotSetRegexpTest() throws Exception {
+        // setup transformation
+        String replacement = "replaced";
+        List<String> list = new LinkedList<>();
+        list.add("to replace");
+
+        String triple = "?s ?p ?o";
+        config.setTripleToDelete(triple);
+        config.setCondition(triple);
+        config.setLanguage("");
+        config.setRegexp(true);
+
+        runTest(replacement, list, "languages", "languages-regexp", 1);
+    }
+
+    @Test
+    public void languageSetRegexpTest() throws Exception {
+        // setup transformation
+        String replacement = "replaced";
+        List<String> list = new LinkedList<>();
+        list.add("to replace");
+
+        String triple = "?s ?p ?o";
+        config.setTripleToDelete(triple);
+        config.setCondition(triple);
+        config.setLanguage("cs");
+        config.setRegexp(true);
+
+        runTest(replacement, list, "languages", "languages-set-regexp", 1);
     }
 
     private void runTest(String replacement, List<String> matches, String inputFile, String outputFile, int expectedExactCount) {
@@ -182,6 +225,7 @@ public class NormalizeTest {
 
         // run and assert
         try {
+            System.out.println("Running test " + inputFile + " => " + outputFile);
             env.run(transformer);
 
             printResultToFile(outputFile);
@@ -214,7 +258,38 @@ public class NormalizeTest {
         }
     }
 
-    private void loadDataFromFile(String file) {
+    private void expectPartialMatches(String replacement, int expectedMatches) {
+        int matches = 0;
+        List<Statement> triples = normalized.getTriples();
+        for (int i = 0; i < triples.size(); i++) {
+            if (triples.get(i).getObject().stringValue().contains(replacement)) {
+                matches += 1;
+            }
+        }
+        assertTrue(matches == expectedMatches);
+    }
 
+    private void expectExactMatches(String replacement, int expectedMatches) {
+        int matches = 0;
+        List<Statement> triples = normalized.getTriples();
+        for (int i = 0; i < triples.size(); i++) {
+            if (triples.get(i).getObject().stringValue().equals(replacement)) {
+                matches += 1;
+            }
+        }
+        assertTrue(matches == expectedMatches);
+    }
+
+    private void expectLanguageMatches(String lang, int expectedMatches) {
+        int matches = 0;
+        List<Statement> triples = normalized.getTriples();
+        for (int i = 0; i < triples.size(); i++) {
+            System.out.println(triples.get(i).getObject());
+            System.out.println(triples.get(i).getObject().stringValue());
+            if (((LiteralImpl) triples.get(i).getObject()).getLanguage().equals(lang)) {
+                matches += 1;
+            }
+        }
+        assertTrue(matches == expectedMatches);
     }
 }

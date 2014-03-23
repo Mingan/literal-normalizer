@@ -4,13 +4,14 @@ DPU for [UnifiedViews](https://github.com/UnifiedViews/Core)/[ODCS](https://gith
 
 ## Usage
 
-This DPU modifies triples with literal objects. It replaces list of values and normalizes them to a given target value.
+This DPU modifies triples with literal objects. It replaces list of values and normalizes them to a given target value. Filtering by language tag is enabled and tags are used for annotating replacement value as well.
 
 1. Specify condition part of SPARQL WHERE clause, you must refer to the literal being updated as `?o`.
 2. Specify triple pattern which should be modified. It will be part of the previous field, `?o` should be in a position of object.
 3. List values which should be replaced, one on a line.
 4. Enter normalized value.
-5. Run pipeline.
+5. Enter language code for filtering. Default is empty which will match only string literals without language tag attached.
+6. Run pipeline.
 
 ### Simple mode
 

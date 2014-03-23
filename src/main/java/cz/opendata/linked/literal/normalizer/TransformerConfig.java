@@ -23,6 +23,7 @@ public class TransformerConfig extends DPUConfigObjectBase {
     private boolean caseSensitive;
     private String condition;
     private String tripleToDelete;
+    private String language;
 
     public TransformerConfig() {
         setToMatch(new LinkedList<String>());
@@ -31,6 +32,7 @@ public class TransformerConfig extends DPUConfigObjectBase {
         setTripleToDelete("");
         setRegexp(false);
         setCaseSensitive(true);
+        setLanguage("");
     }
 
     @Override
@@ -101,6 +103,29 @@ public class TransformerConfig extends DPUConfigObjectBase {
     }
 
     public String getToMatchInString() {
-        return StringUtils.join(getToMatch(), "\n");
+        return getToMatchInString("\n");
+    }
+
+    public String getToMatchInString(String separator) {
+        return StringUtils.join(getToMatch(), separator);
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    @Override
+    public String toString() {
+        return "Condition: " + getCondition()
+                + "; Triple: " + getTripleToDelete()
+                + "; List: " + getToMatchInString("|")
+                + "; Replacement: " + getReplacement()
+                + "; Regexp on: " + (isRegexp() ? "yes" : "no")
+                + "; Case insensitive on: " + (isCaseInsensitive() ? "yes" : "no")
+                + "; Language: " + getLanguage();
     }
 }

@@ -36,6 +36,9 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
 
     private CheckBox checkboxCase;
 
+    private Label labelLang;
+    private TextField textFieldLang;
+
     public TransformerDialog() {
 		super(TransformerConfig.class);
         buildMainLayout();
@@ -48,6 +51,7 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
         textFieldRemove.setValue(config.getTripleToDelete());
         textAreaToMatch.setValue(config.getToMatchInString());
         textFieldReplacement.setValue(config.getReplacement());
+        textFieldLang.setValue(config.getLanguage());
         checkboxRegexp.setValue(config.isRegexp());
         checkboxCase.setValue(config.isCaseInsensitive());
 
@@ -62,6 +66,7 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
         config.setTripleToDelete(textFieldRemove.getValue().trim());
         config.setToMatch(parseToMatch());
         config.setReplacement(textFieldReplacement.getValue());
+        config.setLanguage(textFieldLang.getValue());
         config.setRegexp(checkboxRegexp.getValue());
         config.setCaseSensitive(checkboxCase.getValue());
 
@@ -88,7 +93,7 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
         setHeight("100%");
 
         // common part: create layout
-        mainLayout = new GridLayout(4, 9);
+        mainLayout = new GridLayout(4, 10);
         mainLayout.setImmediate(false);
         mainLayout.setWidth("100%");
         mainLayout.setHeight("100%");
@@ -105,6 +110,7 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
         buildRemoveField();
         buildToMatchField();
         buildReplacementField();
+        buildLangField();
         buildRegexpField();
         buildCaseInsensitiveField();
     }
@@ -164,7 +170,7 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
         textAreaToMatch.setInputPrompt("czk\nKč");
         textAreaToMatch.setDescription("List of strings to be replaced, each value on a new line. The value is treated as a partial regular expression when the option is on");
         textAreaToMatch.addValidator(getEmptyListValidator("Enter at least one string to replace."));
-        mainLayout.addComponent(textAreaToMatch, 0, 5, 0, 8);
+        mainLayout.addComponent(textAreaToMatch, 0, 5, 0, 9);
     }
     
     private void buildReplacementField() {
@@ -183,6 +189,23 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
         textFieldReplacement.addValidator(getRequiredValidator("Normalized string is required."));
         mainLayout.addComponent(textFieldReplacement, 2, 5, 3, 5);
     }
+
+    private void buildLangField() {
+        labelLang = new Label();
+        labelLang.setImmediate(false);
+        labelLang.setWidth("100%");
+        labelLang.setHeight("-1px");
+        labelLang.setValue("Language tag:");
+        mainLayout.addComponent(labelLang, 2, 6, 3, 6);
+
+        textFieldLang = new TextField();
+        textFieldLang.setNullRepresentation("");
+        textFieldLang.setImmediate(true);
+        textFieldLang.setWidth("100%");
+        textFieldLang.setInputPrompt("cs");
+        textFieldLang.setDescription("Tag is used both for filtering and tagging replacement values.");
+        mainLayout.addComponent(textFieldLang, 2, 7, 3, 7);
+    }
     
     private void buildRegexpField() {
         checkboxRegexp = new CheckBox("Use regular expression mode");
@@ -194,14 +217,14 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
                 checkboxCase.setEnabled(checkboxRegexp.getValue());
             }
         });
-        mainLayout.addComponent(checkboxRegexp, 2, 6, 3, 6);
+        mainLayout.addComponent(checkboxRegexp, 2, 8, 3, 8);
     }
     
     private void buildCaseInsensitiveField() {
         checkboxCase = new CheckBox("Use case insensitive regular expressions");
         checkboxCase.setDescription("Applicable only in regular expression mode");
         checkboxCase.setHeight("20px");
-        mainLayout.addComponent(checkboxCase, 2, 7, 3, 7);
+        mainLayout.addComponent(checkboxCase, 2, 9, 3, 9);
     }
 
     private Validator getRequiredValidator(final String message) {

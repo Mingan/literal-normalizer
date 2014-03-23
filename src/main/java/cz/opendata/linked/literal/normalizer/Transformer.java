@@ -41,12 +41,14 @@ public class Transformer extends ConfigurableBase<TransformerConfig>
 				DataUnitException {
 
         LOG.info("Starting copy of input to output");
+        LOG.debug("Config: " + config);
         rdfInput.copyAllDataToTargetDataUnit(rdfOutput);
 
         LOG.info("Building query");
         String query = SparqlQueryBuilder.buildQueryFromConfig(config);
 
         LOG.info("Running query");
+        LOG.debug("Query: " + query);
         rdfOutput.executeSPARQLUpdateQuery(query);
 
         LOG.info("Query done");

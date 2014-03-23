@@ -7,19 +7,28 @@ import java.util.LinkedList;
 
 public class SparqlQueryBuilder {
 
-    static public String buildQueryFromConfig(TransformerConfig config) {
+    private TransformerConfig config;
+
+    public static String buildQueryFromConfig(TransformerConfig config) {
+        SparqlQueryBuilder instance = new SparqlQueryBuilder(config);
+        return instance.buildQuery();
+    }
+
+    private SparqlQueryBuilder(TransformerConfig config) {
+        this.config = config;
+    }
+
+    private String buildQuery() {
         String query =
                 "DELETE { " + config.getTripleToDelete() + " }\n" +
                         "INSERT { " + config.getTripleToInsert() + " }\n" +
                         "WHERE {\n" +
-                        buildAlternativeConditions(config) +
+                        buildAlternativeConditions() +
                         "}";
-
-        System.out.println(query);
         return query;
     }
 
-    static private String buildAlternativeConditions(TransformerConfig config) {
+    private String buildAlternativeConditions() {
         LinkedList<String> alternatives = new LinkedList<>();
         Iterator<String> it = config.getToMatch().iterator();
         while (it.hasNext()) {
@@ -29,26 +38,55 @@ public class SparqlQueryBuilder {
                     "{\n" +
                             config.getCondition() + "\n" +
                             "FILTER(isLiteral(?o))\n" +
-                            buildConditionWithReplacement(config, val) +
+                            buildLanguageFilterForRegexp() +
+                            buildConditionWithReplacement(val) + "\n" +
                             "}\n";
             alternatives.add(query);
         }
         return StringUtils.join(alternatives, "UNION\n");
     }
 
-    static private String buildConditionWithReplacement(TransformerConfig config, String val) {
+    private String buildLanguageFilterForRegexp () {
+        if (config.isRegexp()) {
+            return "FILTER(langMatches(lang(?o), '" + config.getLanguage() + "'))" + "\n";
+        } else {
+            return "";
+        }
+    }
+
+    private String buildConditionWithReplacement(String val) {
         String query;
         if (config.isRegexp()) {
-            query = "FILTER(REGEX(?o, '" + val + "', '" + getRegexpFlags(config) + "'))\n" +
-                    "BIND(REPLACE(?o, '^(.*)" + val + "(.*)$', '$1" + config.getReplacement() + "$2', '" + getRegexpFlags(config) + "') AS ?replacement)\n";
+            query = "FILTER(REGEX(?o, '" + val + "', '" + getRegexpFlags() + "'))\n" +
+                    "BIND(" +
+                        buildRegexpReplacement(val) +
+                    "AS ?replacement)\n";
         } else {
-            query = "FILTER(?o = '" + val + "')\n" +
-                    "BIND('" + config.getReplacement() + "' AS ?replacement)\n";
+            query = "FILTER(?o = '" + val + "'" + getLangTag() + ")\n" +
+                    "BIND('" + config.getReplacement() + "'" + getLangTag() + " AS ?replacement)\n";
         }
         return query;
     }
 
-    static private String getRegexpFlags(TransformerConfig config) {
+
+    private String buildRegexpReplacement(String val) {
+        return "REPLACE(" +
+                "?o, " +
+                "'^(.*)" + val + "(.*)$', '" +
+                "$1" + config.getReplacement() + "$2', " +
+                "'" + getRegexpFlags() + "'" +
+                ")";
+    }
+
+    private String getLangTag () {
+        if (config.getLanguage() == "") {
+            return "";
+        } else {
+            return "@" + config.getLanguage();
+        }
+    }
+
+    private String getRegexpFlags () {
         if (config.isCaseInsensitive()) {
             return "i";
         }
