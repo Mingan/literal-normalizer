@@ -19,13 +19,11 @@ Values are matched by `=` in SPARQL in simple mode, therefore only exact matches
 
 ### Regular expression mode
 
-In regular expression mode the listed values are treated as regular expression snippets wrapped in `^(.*)` and `(.*)$`. Replacement is constructed as `$1$2`. If yout matched literals are more complex you might want to consider starting and ending the string with `\b` for word bounary or `\s` for whitespace to prevent false positives.
-
-By default regular expressions are case-sensitive. You can turn this behavior off to save some typing.
+In regular expression mode the listed values are treated as regular expression snippets wrapped in `^(.*)` and `(.*)$`. Replacement is constructed as `$1$2`. If your matched literals are more complex you might want to consider starting and ending the string with `\b` for word boundary or `\s` for whitespace to prevent false positives. When using reserved characters like `.` don't forget to escape them by two backslashes, eg. `\\.`.
 
 ## Behind the scenes
 
-As a first step DPU copies input triples to output and then runs the constructed SPARQL query on it. With correctly entered configuration number of triples on the input matches the number on the output. It is possible to delete triples you want to keep by incorrectly contructed condition + triple pattern, test it first.
+As a first step DPU copies input triples to output and then runs the constructed SPARQL query on it. With correctly entered configuration number of triples on the input matches the number on the output. It is possible to delete triples you want to keep by incorrectly constructed condition + triple pattern, test it first!
 
 The generated query uses given condition plus `isLiteral(?o)` to filter triples for processing. In fact, this condition is generated for every value in the list and then `UNION`ed together. Each graph pattern has filter for one item in the list. Simple comparison is used in simple mode, filtering with regexp and binding of replacement is used in regexp mode.
 

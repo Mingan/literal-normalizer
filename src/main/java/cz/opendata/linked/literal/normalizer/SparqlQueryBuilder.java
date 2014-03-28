@@ -24,7 +24,8 @@ public class SparqlQueryBuilder {
                         "INSERT { " + config.getTripleToInsert() + " }\n" +
                         "WHERE {\n" +
                         buildAlternativeConditions() +
-                        "}";
+                        buildSimpleReplacement() +
+                "}";
         return query;
     }
 
@@ -39,11 +40,19 @@ public class SparqlQueryBuilder {
                             config.getCondition() + "\n" +
                             "FILTER(isLiteral(?o))\n" +
                             buildLanguageFilterForRegexp() +
-                            buildConditionWithReplacement(val) + "\n" +
+                            buildCondition(val) + "\n" +
                             "}\n";
             alternatives.add(query);
         }
         return StringUtils.join(alternatives, "UNION\n");
+    }
+
+    private String buildSimpleReplacement() {
+        if (config.isRegexp() == false) {
+            return "BIND('" + config.getReplacement() + "'" + getLangTag() + " AS ?replacement)\n";
+        } else {
+            return "";
+        }
     }
 
     private String buildLanguageFilterForRegexp () {
@@ -54,20 +63,35 @@ public class SparqlQueryBuilder {
         }
     }
 
-    private String buildConditionWithReplacement(String val) {
+    private String buildCondition(String val) {
         String query;
         if (config.isRegexp()) {
-            query = "FILTER(REGEX(?o, '" + val + "', '" + getRegexpFlags() + "'))\n" +
-                    "BIND(" +
-                        buildRegexpReplacement(val) +
-                    "AS ?replacement)\n";
+            query = buildRegexConditionWithReplacement(val);
         } else {
-            query = "FILTER(?o = '" + val + "'" + getLangTag() + ")\n" +
-                    "BIND('" + config.getReplacement() + "'" + getLangTag() + " AS ?replacement)\n";
+            query = buildSimpleCondition(val);
         }
         return query;
     }
 
+    private String buildRegexConditionWithReplacement(String val) {
+        String query;
+        query = "FILTER(REGEX(?o, '" + val + "', '" + getRegexpFlags() + "'))\n" +
+                "BIND(" +
+                    buildRegexpReplacement(val) +
+                "AS ?replacement)\n";
+        return query;
+    }
+
+    private String buildSimpleCondition(String val) {
+        String query;
+        if (config.isCaseSensitive()) {
+            query = "FILTER(?o = '" + val + "'" + getLangTag() + ")\n";
+        } else {
+            query = "FILTER(LCASE(?o) = '" + val.toLowerCase() + "'" + getLangTag() + ")\n";
+        }
+
+        return query;
+    }
 
     private String buildRegexpReplacement(String val) {
         return "REPLACE(" +

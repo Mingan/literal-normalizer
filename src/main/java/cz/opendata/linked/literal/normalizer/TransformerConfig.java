@@ -42,7 +42,6 @@ public class TransformerConfig extends DPUConfigObjectBase {
         return getCondition() != ""
                 && getTripleToDelete() != ""
                 && getToMatch().size() != 0
-                && getReplacement() != ""
                 && updateValidator.isQueryValid();
     }
 

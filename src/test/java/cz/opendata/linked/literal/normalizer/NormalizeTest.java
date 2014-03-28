@@ -20,7 +20,7 @@ import static org.junit.Assert.fail;
 
 public class NormalizeTest {
 
-    public static final String OUTPUT_DIR = "w:\\dip\\tmp\\";
+    public static final String OUTPUT_DIR = "w:\\dip\\tmp\\test-output\\";
 
     private Transformer transformer;
     private TransformerConfig config;
@@ -49,6 +49,7 @@ public class NormalizeTest {
         list.add("CZK");
         list.add("kč");
         list.add("Kč");
+        System.out.println(config.toString());
 
         config.setRegexp(false);
         runTest(replacement, list, "whole-strings", "whole-strings", 4);
@@ -76,8 +77,23 @@ public class NormalizeTest {
         list.add("lowercase");
 
         config.setRegexp(false);
+        config.setCaseSensitive(true);
 
         runTest(replacement, list, "regexp-case", "simple-case-sensitive", 1);
+    }
+
+    @Test
+    public void simpleCaseInsensitiveTest() throws Exception {
+        // setup transformation
+        String replacement = "replaced";
+
+        List<String> list = new LinkedList<>();
+        list.add("lowercase");
+
+        config.setRegexp(false);
+        config.setCaseSensitive(false);
+
+        runTest(replacement, list, "regexp-case", "simple-case-insensitive", 2);
     }
 
     @Test

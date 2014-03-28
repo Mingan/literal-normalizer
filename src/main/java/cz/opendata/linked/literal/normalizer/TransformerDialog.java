@@ -1,10 +1,10 @@
 package cz.opendata.linked.literal.normalizer;
 
-import com.vaadin.data.Property;
 import com.vaadin.data.Validator;
 import com.vaadin.ui.*;
 import cz.cuni.mff.xrg.odcs.commons.configuration.ConfigException;
 import cz.cuni.mff.xrg.odcs.commons.module.dialog.BaseConfigDialog;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -53,10 +53,8 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
         textFieldReplacement.setValue(config.getReplacement());
         textFieldLang.setValue(config.getLanguage());
         checkboxRegexp.setValue(config.isRegexp());
-        checkboxCase.setValue(config.isCaseInsensitive());
-
-        checkboxCase.setEnabled(config.isRegexp());
-    }
+        checkboxCase.setValue(config.isCaseSensitive());
+   }
 
     @Override
     public TransformerConfig getConfiguration() throws ConfigException {
@@ -74,7 +72,7 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
     }
 
     private List<String> parseToMatch() {
-        List<String> list = Arrays.asList(textAreaToMatch.getValue());
+        List<String> list = Arrays.asList(StringUtils.split(textAreaToMatch.getValue(), '\n'));
         List<String> filtered = new LinkedList<>();
 
         for (String line : list) {
@@ -186,7 +184,6 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
         textFieldReplacement.setImmediate(true);
         textFieldReplacement.setWidth("100%");
         textFieldReplacement.setInputPrompt("CZK");
-        textFieldReplacement.addValidator(getRequiredValidator("Normalized string is required."));
         mainLayout.addComponent(textFieldReplacement, 2, 5, 3, 5);
     }
 
@@ -211,20 +208,14 @@ public class TransformerDialog extends BaseConfigDialog<TransformerConfig> {
         checkboxRegexp = new CheckBox("Use regular expression mode");
         checkboxRegexp.setDescription("Strings to replace should be treated as a partial regular expression");
         checkboxRegexp.setHeight("20px");
-        checkboxRegexp.addValueChangeListener(new Property.ValueChangeListener() {
-            @Override
-            public void valueChange(Property.ValueChangeEvent event) {
-                checkboxCase.setEnabled(checkboxRegexp.getValue());
-            }
-        });
-        mainLayout.addComponent(checkboxRegexp, 2, 8, 3, 8);
+        mainLayout.addComponent(checkboxRegexp, 2, 9, 3, 9);
     }
     
     private void buildCaseInsensitiveField() {
-        checkboxCase = new CheckBox("Use case insensitive regular expressions");
-        checkboxCase.setDescription("Applicable only in regular expression mode");
+        checkboxCase = new CheckBox("Case sensitivity");
+        checkboxCase.setDescription("Adds i flag in regular expression mode, compares strings transformed by LCASE() function in SPARQL in simple mode");
         checkboxCase.setHeight("20px");
-        mainLayout.addComponent(checkboxCase, 2, 9, 3, 9);
+        mainLayout.addComponent(checkboxCase, 2, 8, 3, 8);
     }
 
     private Validator getRequiredValidator(final String message) {
