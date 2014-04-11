@@ -1,9 +1,6 @@
 package cz.opendata.linked.literal.normalizer;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Iterator;
-import java.util.LinkedList;
 
 public class SparqlQueryBuilder {
 
@@ -19,87 +16,97 @@ public class SparqlQueryBuilder {
     }
 
     private String buildQuery() {
+        String where;
+        if (config.isRegexp()) {
+            where = buildRegexCondition();
+        } else {
+            if (config.isCaseSensitive()) {
+                where = buildSimpleCondition();
+            } else {
+                where = buildSimpleInsensitiveCondition();
+            }
+        }
         String query =
                 "DELETE { " + config.getTripleToDelete() + " }\n" +
                         "INSERT { " + config.getTripleToInsert() + " }\n" +
-                        "WHERE {\n" +
-                        buildAlternativeConditions() +
-                        buildSimpleReplacement() +
-                "}";
+                        "WHERE {\n" + where + "\n}";
+        System.out.println(query);
         return query;
     }
 
-    private String buildAlternativeConditions() {
-        LinkedList<String> alternatives = new LinkedList<>();
+    private String buildRegexCondition() {
+        String query;
+        String regexp = buildRegexpFromAlternatives();
+        String flags = getRegexpFlags();
+        query =
+                buildCondition() +
+                buildLanguageFilter() +
+                buildRegexpFilter(regexp, flags) +
+                buildRegexpReplacement(regexp, flags);
+        return query;
+    }
+
+    private String getRegexpFlags () {
+        if (config.isCaseInsensitive()) {
+            return "i";
+        }
+        return "";
+    }
+
+    private String buildRegexpFromAlternatives() {
+        return config.getToMatchInString("|");
+    }
+
+    private String buildCondition() {
+        return config.getCondition() + "\n";
+    }
+
+    private String buildLanguageFilter() {
+        return "FILTER(langMatches(lang(?o), '" + config.getLanguage() + "'))" + "\n";
+    }
+
+    private String buildRegexpFilter(String regexp, String flags) {
+        return "FILTER(REGEX(?o, '" + regexp + "', '" + flags + "'))\n";
+    }
+
+    private String buildRegexpReplacement(String val, String flags) {
+        return "BIND(" +
+                "REPLACE(" +
+                "?o, " +
+                "'" + val + "'," +
+                "'" + config.getReplacement() + "', " +
+                "'" + flags + "'" +
+                ")" +
+                " AS ?replacement)\n";
+    }
+
+    private String buildSimpleCondition() {
+        String query =
+                buildCondition() +
+                buildValuesSection() +
+                buildSimpleReplacement();
+        return query;
+    }
+
+    private String buildValuesSection() {
+        return buildValuesSection(false);
+    }
+
+    private String buildValuesSection(boolean temp) {
+        String var;
+        if (temp) {
+            var = "?o_temp";
+        } else {
+            var = "?o";
+        }
         Iterator<String> it = config.getToMatch().iterator();
+        String query = "VALUES " + var + " {\n";
         while (it.hasNext()) {
             String val = it.next();
-
-            String query =
-                    "{\n" +
-                            config.getCondition() + "\n" +
-                            "FILTER(isLiteral(?o))\n" +
-                            buildLanguageFilterForRegexp() +
-                            buildCondition(val) + "\n" +
-                            "}\n";
-            alternatives.add(query);
+            query += "'" + val + "'" + getLangTag() + "\n";
         }
-        return StringUtils.join(alternatives, "UNION\n");
-    }
-
-    private String buildSimpleReplacement() {
-        if (config.isRegexp() == false) {
-            return "BIND('" + config.getReplacement() + "'" + getLangTag() + " AS ?replacement)\n";
-        } else {
-            return "";
-        }
-    }
-
-    private String buildLanguageFilterForRegexp () {
-        if (config.isRegexp()) {
-            return "FILTER(langMatches(lang(?o), '" + config.getLanguage() + "'))" + "\n";
-        } else {
-            return "";
-        }
-    }
-
-    private String buildCondition(String val) {
-        String query;
-        if (config.isRegexp()) {
-            query = buildRegexConditionWithReplacement(val);
-        } else {
-            query = buildSimpleCondition(val);
-        }
+        query += "}\n";
         return query;
-    }
-
-    private String buildRegexConditionWithReplacement(String val) {
-        String query;
-        query = "FILTER(REGEX(?o, '" + val + "', '" + getRegexpFlags() + "'))\n" +
-                "BIND(" +
-                    buildRegexpReplacement(val) +
-                "AS ?replacement)\n";
-        return query;
-    }
-
-    private String buildSimpleCondition(String val) {
-        String query;
-        if (config.isCaseSensitive()) {
-            query = "FILTER(?o = '" + val + "'" + getLangTag() + ")\n";
-        } else {
-            query = "FILTER(LCASE(?o) = '" + val.toLowerCase() + "'" + getLangTag() + ")\n";
-        }
-
-        return query;
-    }
-
-    private String buildRegexpReplacement(String val) {
-        return "REPLACE(" +
-                "?o, " +
-                "'^(.*)" + val + "(.*)$', '" +
-                "$1" + config.getReplacement() + "$2', " +
-                "'" + getRegexpFlags() + "'" +
-                ")";
     }
 
     private String getLangTag () {
@@ -110,10 +117,22 @@ public class SparqlQueryBuilder {
         }
     }
 
-    private String getRegexpFlags () {
-        if (config.isCaseInsensitive()) {
-            return "i";
-        }
-        return "";
+    private String buildSimpleReplacement() {
+        return "BIND('" + config.getReplacement() + "'" + getLangTag() + " AS ?replacement)\n";
+    }
+
+
+    private String buildSimpleInsensitiveCondition() {
+        String query =
+                buildCondition() +
+                buildLanguageFilter() +
+                buildCaseInsensitiveFilter() +
+                buildValuesSection(true) +
+                buildSimpleReplacement();
+        return query;
+    }
+
+    private String buildCaseInsensitiveFilter() {
+        return "FILTER(LCASE(?o) = ?o_temp)\n";
     }
 }

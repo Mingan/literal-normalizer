@@ -97,6 +97,37 @@ public class NormalizeTest {
     }
 
     @Test
+    public void largerCaseInsensitiveTest() throws Exception {
+        // setup transformation
+        String replacement = "replaced";
+
+        List<String> list = new LinkedList<>();
+        list.add("lowercase");
+        list.add("other");
+
+        config.setRegexp(false);
+        config.setCaseSensitive(false);
+
+        runTest(replacement, list, "case-alternative", "larger-case-insensitive", 4);
+    }
+
+    @Test
+    public void largerCaseInsensitiveLangTest() throws Exception {
+        // setup transformation
+        String replacement = "replaced";
+
+        List<String> list = new LinkedList<>();
+        list.add("lowercase");
+        list.add("other");
+
+        config.setRegexp(false);
+        config.setCaseSensitive(false);
+        config.setLanguage("en");
+
+        runTest(replacement, list, "case-alternative-langs", "larger-case-insensitive-lang", 2);
+    }
+
+    @Test
     public void regexCaseSensitiveTest() throws Exception {
         // setup transformation
         String replacement = "replaced";
