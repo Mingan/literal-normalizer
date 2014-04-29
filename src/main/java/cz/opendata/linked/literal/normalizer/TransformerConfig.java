@@ -1,11 +1,12 @@
 package cz.opendata.linked.literal.normalizer;
 
 import cz.cuni.mff.xrg.odcs.commons.module.config.DPUConfigObjectBase;
-import cz.cuni.mff.xrg.odcs.rdf.validators.SPARQLUpdateValidator;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Put your DPU's configuration here.
@@ -17,8 +18,7 @@ import java.util.List;
  */
 public class TransformerConfig extends DPUConfigObjectBase {
 
-    private List<String> toMatch;
-    private String replacement;
+    private LinkedHashMap<String, String> pairs;
     private boolean regexp;
     private boolean caseSensitive;
     private String condition;
@@ -26,8 +26,7 @@ public class TransformerConfig extends DPUConfigObjectBase {
     private String language;
 
     public TransformerConfig() {
-        setToMatch(new LinkedList<String>());
-        setReplacement("");
+        setPairs(new LinkedHashMap<String, String>());
         setCondition("");
         setTripleToDelete("");
         setRegexp(false);
@@ -35,30 +34,54 @@ public class TransformerConfig extends DPUConfigObjectBase {
         setLanguage("");
     }
 
-    @Override
-    public boolean isValid() {
-        String query = SparqlQueryBuilder.buildQueryFromConfig(this);
-        SPARQLUpdateValidator updateValidator = new SPARQLUpdateValidator(query);
-        return getCondition() != ""
-                && getTripleToDelete() != ""
-                && getToMatch().size() != 0
-                && updateValidator.isQueryValid();
+    public Map<String, String> getPairs() {
+        return pairs;
+    }
+
+    public void setPairs(LinkedHashMap<String, String> pairs) {
+        this.pairs = pairs;
+    }
+
+    /**
+     * Converts to lists from dialog to map of strings × strings, empty replacements are filled by previous replacements
+     * @param toMatch
+     * @param replacements
+     */
+    public void setPairs(List<String> toMatch, List<String> replacements) {
+        pairs = new LinkedHashMap<>();
+        String lastReplacement = null;
+        for (int i = 0; i < toMatch.size(); i++) {
+            String replacement = replacements.get(i);
+            if (replacement == null || replacement.trim().equals("")) {
+                replacement = lastReplacement;
+            } else {
+                lastReplacement = replacement;
+            }
+            if (replacement != null) {
+                pairs.put(toMatch.get(i), replacement);
+            }
+        }
     }
 
     public List<String> getToMatch() {
-        return toMatch;
+        List<String> list = new LinkedList<>();
+        list.addAll(pairs.keySet());
+        return list;
     }
 
-    public void setToMatch(List<String> toMatch) {
-        this.toMatch = toMatch;
-    }
-
-    public String getReplacement() {
-        return replacement;
-    }
-
-    public void setReplacement(String replacement) {
-        this.replacement = replacement;
+    public List<String> getReplacementsWithoutDuplicates() {
+        List<String> replacements = new LinkedList<>();
+        String lastDifferentReplacement = null;
+        for (Map.Entry<String, String> entry : pairs.entrySet()) {
+            String val = entry.getValue();
+            if (val == lastDifferentReplacement) {
+                replacements.add("");
+            } else {
+                replacements.add(val);
+                lastDifferentReplacement = val;
+            }
+        }
+        return replacements;
     }
 
     public void setRegexp(boolean regexp) {
@@ -102,11 +125,11 @@ public class TransformerConfig extends DPUConfigObjectBase {
     }
 
     public String getToMatchInString() {
-        return getToMatchInString("\n");
+        return StringUtils.join(getToMatch(), "\n");
     }
 
-    public String getToMatchInString(String separator) {
-        return StringUtils.join(getToMatch(), separator);
+    public String getReplacementsInStringWithoutDuplicates() {
+        return StringUtils.join(getReplacementsWithoutDuplicates(), "\n");
     }
 
     public String getLanguage() {
@@ -121,8 +144,7 @@ public class TransformerConfig extends DPUConfigObjectBase {
     public String toString() {
         return "Condition: " + getCondition()
                 + "; Triple: " + getTripleToDelete()
-                + "; List: " + getToMatchInString("|")
-                + "; Replacement: " + getReplacement()
+                + "; Pairs: " + pairs.toString()
                 + "; Regexp on: " + (isRegexp() ? "yes" : "no")
                 + "; Case insensitive on: " + (isCaseInsensitive() ? "yes" : "no")
                 + "; Language: " + getLanguage();

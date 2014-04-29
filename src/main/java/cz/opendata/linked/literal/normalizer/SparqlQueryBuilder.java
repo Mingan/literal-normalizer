@@ -1,6 +1,7 @@
 package cz.opendata.linked.literal.normalizer;
 
 import java.util.Iterator;
+import java.util.Map;
 
 public class SparqlQueryBuilder {
 
@@ -26,6 +27,7 @@ public class SparqlQueryBuilder {
                 where = buildSimpleInsensitiveCondition();
             }
         }
+        //where += buildValuesSection();
         String query =
                 "DELETE { " + config.getTripleToDelete() + " }\n" +
                         "INSERT { " + config.getTripleToInsert() + " }\n" +
@@ -36,13 +38,13 @@ public class SparqlQueryBuilder {
 
     private String buildRegexCondition() {
         String query;
-        String regexp = buildRegexpFromAlternatives();
         String flags = getRegexpFlags();
         query =
                 buildCondition() +
                 buildLanguageFilter() +
-                buildRegexpFilter(regexp, flags) +
-                buildRegexpReplacement(regexp, flags);
+                buildValuesSection(true) +
+                buildRegexpFilter(flags) +
+                buildRegexpReplacement(flags);
         return query;
     }
 
@@ -53,30 +55,31 @@ public class SparqlQueryBuilder {
         return "";
     }
 
-    private String buildRegexpFromAlternatives() {
-        return config.getToMatchInString("|");
-    }
-
     private String buildCondition() {
-        return config.getCondition() + "\n";
+        return config.getCondition() + "\nFILTER(isLiteral(?o))\n";
     }
 
     private String buildLanguageFilter() {
         return "FILTER(langMatches(lang(?o), '" + config.getLanguage() + "'))" + "\n";
     }
 
-    private String buildRegexpFilter(String regexp, String flags) {
-        return "FILTER(REGEX(?o, '" + regexp + "', '" + flags + "'))\n";
+    private String buildRegexpFilter( String flags) {
+        return "FILTER(REGEX(?o, ?o_temp, '" + flags + "'))\n";
     }
 
-    private String buildRegexpReplacement(String val, String flags) {
-        return "BIND(" +
-                "REPLACE(" +
+    private String buildRegexpReplacement(String flags) {
+        String replace = "REPLACE(" +
                 "?o, " +
-                "'" + val + "'," +
-                "'" + config.getReplacement() + "', " +
+                "?o_temp, " +
+                "?replacement_item, " +
                 "'" + flags + "'" +
-                ")" +
+                ")";
+        if (config.getLanguage() != "") {
+            replace = "STRLANG(" + replace +
+                            ", '" + config.getLanguage() + "') ";
+        }
+        return "BIND(" +
+                 replace +
                 " AS ?replacement)\n";
     }
 
@@ -100,10 +103,13 @@ public class SparqlQueryBuilder {
             var = "?o";
         }
         Iterator<String> it = config.getToMatch().iterator();
-        String query = "VALUES " + var + " {\n";
+        String query = "VALUES (" + var + " ?replacement_item) {\n";
+        for(Map.Entry<String, String> entry : config.getPairs().entrySet()) {
+
+            query += "('" + entry.getKey() + "'" + getLangTag() + " '" + entry.getValue() + "')\n";
+        }
         while (it.hasNext()) {
             String val = it.next();
-            query += "'" + val + "'" + getLangTag() + "\n";
         }
         query += "}\n";
         return query;
@@ -118,7 +124,7 @@ public class SparqlQueryBuilder {
     }
 
     private String buildSimpleReplacement() {
-        return "BIND('" + config.getReplacement() + "'" + getLangTag() + " AS ?replacement)\n";
+        return "BIND(STRLANG(?replacement_item, '" + config.getLanguage() + "') AS ?replacement)\n";
     }
 
 
